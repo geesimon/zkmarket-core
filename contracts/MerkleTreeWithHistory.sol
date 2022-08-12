@@ -48,12 +48,7 @@ contract MerkleTreeWithHistory {
   ) public pure returns (bytes32) {
     require(uint256(_left) < FIELD_SIZE, "_left should be inside the field");
     require(uint256(_right) < FIELD_SIZE, "_right should be inside the field");
-    // uint256 R = uint256(_left);
-    // uint256 C = 0;
-    // (R, C) = _hasher.MiMCSponge(R, C);
-    // R = addmod(R, uint256(_right), FIELD_SIZE);
-    // (R, C) = _hasher.MiMCSponge(R, C);
-    // return bytes32(R);
+
     (uint256 hashValue,) = _hasher.MiMCSponge(uint256(_left), uint256(_right), 0);
     
     // emit Hash(_left, _right, bytes32(hashValue));
@@ -137,7 +132,7 @@ contract MerkleTreeWithHistory {
     return roots[currentRootIndex];
   }
 
-  /// @dev provides Zero (Empty) elements for a MiMC MerkleTree. Up to 32 levels
+  /// @dev provides Zero (Empty) elements for a MiMC MerkleTree. Up to 20 levels
   function zeros(uint256 i) public pure returns (bytes32) {
     if (i == 0) return bytes32(uint256(0x12f1c868f7a8a61c1c0c699f7272f7089ca416432fcc978be7abb941e15ab6a3));
     else if (i == 1) return bytes32(uint256(0x2df788be786881da8a3314c0e6e84ad533e62c3609f818cde7cf0a9bb363d062));

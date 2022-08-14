@@ -7,12 +7,13 @@ include "merkleTree.circom";
 template WithdrawTest(levels) {
     signal input root;
     signal input nullifierHash;
-    signal input recipient; // not taking part in any computations
-    signal input relayer;  // not taking part in any computations
-    signal input fee;      // not taking part in any computations
-    signal input refund;   // not taking part in any computations
+    signal input recipient;
+    signal input amount;
+    signal input relayer;
+    signal input fee;
+    signal input refund;
     signal input nullifier;
-    signal input secret;
+    signal input secret;    
     signal input pathElements[levels];
     signal input pathIndices[levels];
 
@@ -28,6 +29,7 @@ template WithdrawTest(levels) {
     component hasher = CommitmentHasher();
     hasher.nullifier <== nullifier;
     hasher.secret <== secret;
+    hasher.amount <== amount;
     hasher.nullifierHash === nullifierHash;
     
     component tree = MerkleTreeRoot(levels);
@@ -61,4 +63,4 @@ template WithdrawTest(levels) {
     refundSquare <== refund * refund;
 }
 
-component main {public [root, nullifierHash, recipient, relayer, fee, refund]} = WithdrawTest(20);
+component main {public [root, nullifierHash, recipient, amount, relayer, fee, refund]} = WithdrawTest(20);

@@ -78,3 +78,100 @@ describe("Circuit Commitment Hasher Test", function() {
     });
 });
 
+describe("Circuit Merkle Tree Test", function() {
+    this.timeout(300000);
+    
+    let merkleTreeCircuit;
+    
+    before( async() => {
+        let mimcSponge = await buildMimcSponge();
+        let F = mimcSponge.F;
+
+        //Set global Mimc hash function
+        mimcHasher = (left, right) => F.toObject(mimcSponge.hash(left, right, 0).xL);
+
+        tree = new MerkleTree(20, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
+        
+        merkleTreeCircuit = await wasm_tester(path.join(__dirname, "../circuits", "merkleTree.test.circom"));
+        // mimcCircuit = await wasm_tester(path.join(__dirname, "../circuits", "mimc.test.circom"));
+    });
+
+    it("Should insert 1000 leaves and verify any 10", async () => {
+        let leaves = Array(1000);
+        let checkCandidates = Array(10);
+
+        for (var i = 0; i < leaves.length; i++){
+            leaves[i] = bigInt.randBetween(0, FIELD_SIZE);
+            tree.insert(leaves[i]);
+        }
+        for (var i = 0; i < checkCandidates.length; i++) {
+            checkCandidates[i] = Math.floor(Math.random() * leaves.length);
+        }
+
+        for (var i = 0; i < checkCandidates.length; i++){
+            console.log("check ", checkCandidates[i], ":", leaves[checkCandidates[i]].toString(), "->", tree.root);
+            let w;
+
+            const { pathElements, pathIndices } = tree.proof(leaves[checkCandidates[i]]);
+            // console.log(pathElements, pathIndices);
+            w = await merkleTreeCircuit.calculateWitness({ leaf: leaves[checkCandidates[i]],
+                                                            pathElements: pathElements,
+                                                            pathIndices: pathIndices}, 
+                                                            true);
+            // console.log(w);
+            await merkleTreeCircuit.assertOut(w, {root: tree.root});
+            await merkleTreeCircuit.checkConstraints(w);
+        }
+    });
+});
+
+describe("Circuit Withdrawal Test", function () {
+    this.timeout(600000);
+
+    let withdrawCircuit;
+
+    const rbigint = (nbytes) => bigInt.randBetween(0, bigInt(2).pow(nbytes * 8));
+
+    before( async() => {           
+        withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdraw.test.circom"));
+    });
+
+    it("Should insert and verify 10 commitments in merkle tree", async () => {
+        for (var i = 0; i < 10; i++) {
+            let w;
+            let nullifier = rbigint(31);
+            let secret = rbigint(31);
+            let amount = rbigint(31);
+
+            const {nullifierHash, commitmentHash} = calcCommitmentNullifierHash(nullifier, secret, amount);
+            tree.insert(commitmentHash);
+            const {pathElements, pathIndices} = tree.proof(commitmentHash);
+
+            console.log("check ", i, ":", commitmentHash, "->", tree.root);
+
+            w = await withdrawCircuit.calculateWitness({ root: tree.root.toString(),
+                                                        nullifier: nullifier.toString(),
+                                                        nullifierHash: nullifierHash.toString(),
+                                                        secret: secret.toString(),
+                                                        pathElements: pathElements,
+                                                        pathIndices: pathIndices,
+                                                        recipient: "247339843768101550699144957037481732776977273098",
+                                                        amount: amount.toString(),
+                                                        relayer: "1431779679606208237886699149837667504955655623894",
+                                                        fee: "200000000000000000",
+                                                        refund: "0",
+                                                        }, 
+                                                        true);
+            await withdrawCircuit.assertOut(w, {
+                                                input_root: tree.root,
+                                                input_nullifier: nullifier,
+                                                input_nullifierHash: nullifierHash,
+                                                input_secret: secret,
+                                                circuit_root: tree.root,
+                                                circuit_nullifierHash: nullifierHash,
+                                                circuit_commitment: commitmentHash
+                                                });
+            await withdrawCircuit.checkConstraints(w);
+        }
+    })
+});

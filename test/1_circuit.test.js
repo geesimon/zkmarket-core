@@ -160,7 +160,7 @@ describe("Circuit Withdrawal Test", function () {
                                                         relayer: "1431779679606208237886699149837667504955655623894",
                                                         fee: "200000000000000000",
                                                         refund: "0",
-                                                        }, 
+                                                        },
                                                         true);
             await withdrawCircuit.assertOut(w, {
                                                 input_root: tree.root,

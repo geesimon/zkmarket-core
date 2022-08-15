@@ -1,6 +1,6 @@
 /* global artifacts */
-const Verifier = artifacts.require('Verifier')
+const CommitmentVerifier = artifacts.require('CommitmentVerifier')
 
 module.exports = function (deployer) {
-  deployer.deploy(Verifier)
+  deployer.deploy(CommitmentVerifier)
 }

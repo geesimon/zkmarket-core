@@ -36,7 +36,7 @@ const calcCommitmentNullifierHash = (_nullifier, _secret, _amount) => {
 describe("Circuit Commitment Hasher Test", function() {
     this.timeout(100000);
 
-    let commitmentHasherCircuit;
+    let commitmentCircuit;
 
     before( async() => {
         let pedersenHash = await buildPedersenHash();
@@ -44,21 +44,20 @@ describe("Circuit Commitment Hasher Test", function() {
         let F = babyJub.F;
 
         pedersenHasher = (data) => F.toObject(babyJub.unpackPoint(pedersenHash.hash(data))[0]);
-        commitmentHasherCircuit = await wasm_tester(path.join(__dirname, "../circuits", "commitmentHasher.test.circom"));
+        commitmentCircuit = await wasm_tester(path.join(__dirname, "../circuits", "commitment.circom"));
     });
 
-    async function verifyCommitmentHasher(_nullifier, _secret, _amount) {
+    async function verifyCommitmentHasher(_amount, _nullifier, _secret) {
         let w;
 
-        w = await commitmentHasherCircuit.calculateWitness({ nullifier: _nullifier, secret: _secret, amount: _amount}, true);
+        const {commitmentHash} = calcCommitmentNullifierHash(bigInt(_nullifier), bigInt(_secret), bigInt(_amount));
 
-        const {nullifierHash, commitmentHash} = calcCommitmentNullifierHash(bigInt(_nullifier), bigInt(_secret), bigInt(_amount));
+        w = await commitmentCircuit.calculateWitness({  commitmentHash: commitmentHash,
+                                                        amount: _amount,
+                                                        nullifier: _nullifier, 
+                                                        secret: _secret}, true);
 
-        // console.log("commitmentHash:", commitmentHash);
-        // console.log("nullifierHash:", nullifierHash);
-
-        await commitmentHasherCircuit.assertOut(w, {commitmentHash: commitmentHash, 
-                                                    nullifierHash: nullifierHash});    
+        await commitmentCircuit.checkConstraints(w);
     }
 
     it("Should Compute big value", async () => {
@@ -93,7 +92,6 @@ describe("Circuit Merkle Tree Test", function() {
         tree = new MerkleTree(20, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
         
         merkleTreeCircuit = await wasm_tester(path.join(__dirname, "../circuits", "merkleTree.test.circom"));
-        // mimcCircuit = await wasm_tester(path.join(__dirname, "../circuits", "mimc.test.circom"));
     });
 
     it("Should insert 1000 leaves and verify any 10", async () => {
@@ -109,7 +107,8 @@ describe("Circuit Merkle Tree Test", function() {
         }
 
         for (var i = 0; i < checkCandidates.length; i++){
-            console.log("check ", checkCandidates[i], ":", leaves[checkCandidates[i]].toString(), "->", tree.root);
+            // console.log("check ", checkCandidates[i], ":", leaves[checkCandidates[i]].toString(), "->", tree.root);
+            console.log("check ", checkCandidates[i]);
             let w;
 
             const { pathElements, pathIndices } = tree.proof(leaves[checkCandidates[i]]);
@@ -133,7 +132,7 @@ describe("Circuit Withdrawal Test", function () {
     const rbigint = (nbytes) => bigInt.randBetween(0, bigInt(2).pow(nbytes * 8));
 
     before( async() => {           
-        withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdraw.test.circom"));
+        withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdraw.circom"));
     });
 
     it("Should insert and verify 10 commitments in merkle tree", async () => {
@@ -147,7 +146,7 @@ describe("Circuit Withdrawal Test", function () {
             tree.insert(commitmentHash);
             const {pathElements, pathIndices} = tree.proof(commitmentHash);
 
-            console.log("check ", i, ":", commitmentHash, "->", tree.root);
+            console.log("check ", i, " => Root:", tree.root);
 
             w = await withdrawCircuit.calculateWitness({ root: tree.root.toString(),
                                                         nullifier: nullifier.toString(),
@@ -158,19 +157,9 @@ describe("Circuit Withdrawal Test", function () {
                                                         recipient: "247339843768101550699144957037481732776977273098",
                                                         amount: amount.toString(),
                                                         relayer: "1431779679606208237886699149837667504955655623894",
-                                                        fee: "200000000000000000",
-                                                        refund: "0",
+                                                        fee: "200000000000000000"
                                                         },
                                                         true);
-            await withdrawCircuit.assertOut(w, {
-                                                input_root: tree.root,
-                                                input_nullifier: nullifier,
-                                                input_nullifierHash: nullifierHash,
-                                                input_secret: secret,
-                                                circuit_root: tree.root,
-                                                circuit_nullifierHash: nullifierHash,
-                                                circuit_commitment: commitmentHash
-                                                });
             await withdrawCircuit.checkConstraints(w);
         }
     })

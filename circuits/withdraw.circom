@@ -11,7 +11,6 @@ template Withdraw(levels) {
     signal input amount;
     signal input relayer;
     signal input fee;
-    signal input refund;
     signal input nullifier;
     signal input secret;
     signal input pathElements[levels];
@@ -23,7 +22,6 @@ template Withdraw(levels) {
     hasher.amount <== amount;
     hasher.nullifierHash === nullifierHash;
     
-
     component tree = MerkleTreeChecker(levels);
     tree.leaf <== hasher.commitmentHash;
     tree.root <== root;
@@ -42,7 +40,6 @@ template Withdraw(levels) {
     recipientSquare <== recipient * recipient;
     feeSquare <== fee * fee;
     relayerSquare <== relayer * relayer;
-    refundSquare <== refund * refund;
 }
 
-component main {public [root, nullifierHash, recipient, amount, relayer, fee, refund]} = Withdraw(20);
+component main {public [root, nullifierHash, recipient, amount, relayer, fee]} = Withdraw(20);

@@ -7,7 +7,7 @@ interface IHasher {
 
 contract MerkleTreeWithHistory {
   uint256 public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-  uint256 public constant ZERO_VALUE = 8568824596295711272276493421173227402986947053170746004488571001319888434851; // = keccak256("hongbao") % FIELD_SIZE
+  uint256 public constant ZERO_VALUE = 890052662763911307850778159620885184910760398780342638619984914703804053834; // keccak256("zkMarket.Finance") % FIELD_SIZE
   IHasher public immutable hasher;
 
   uint32 public levels;
@@ -134,27 +134,27 @@ contract MerkleTreeWithHistory {
 
   /// @dev provides Zero (Empty) elements for a MiMC MerkleTree. Up to 20 levels
   function zeros(uint256 i) public pure returns (bytes32) {
-    if (i == 0) return bytes32(uint256(0x12f1c868f7a8a61c1c0c699f7272f7089ca416432fcc978be7abb941e15ab6a3));
-    else if (i == 1) return bytes32(uint256(0x2df788be786881da8a3314c0e6e84ad533e62c3609f818cde7cf0a9bb363d062));
-    else if (i == 2) return bytes32(uint256(0x16425d57f21e06867dee8398d97d7beb7e0a1bf8ce701793266ee0ff6765025c));
-    else if (i == 3) return bytes32(uint256(0x23abad249052d2923f26ed956fcd1c2bcd5eff324a3bd2ffae42f40514c9ab92));
-    else if (i == 4) return bytes32(uint256(0xe449e754c50ebdd1934e2581c91b15883d9b3280da8472c8679193df754107d));
-    else if (i == 5) return bytes32(uint256(0x28304fd49efd740bf703ed270284c09b616c23440016bf6ad5705372b684f10b));
-    else if (i == 6) return bytes32(uint256(0x1287d83833dd726a6e3df227b2d9f032df9f10b9fc8b33a69d65fbca26e651d2));
-    else if (i == 7) return bytes32(uint256(0x35bb0e30dc1fcfb93c39f842b20fc08a958a24a34c6d3fe3a65b186e5956b4d));
-    else if (i == 8) return bytes32(uint256(0xb03891f4d509dccf716d9aedfc4bc1538eeb385aee95e1ff47a029aa950c607));
-    else if (i == 9) return bytes32(uint256(0x2a63376839b1317433625ebaf6b4ab619e9c15661c0851839dd29c3d54bc1a56));
-    else if (i == 10) return bytes32(uint256(0x198fcf42ce24d39eba2da516f93efcd7a2d414450ad482adc3b10fbb63082a04));
-    else if (i == 11) return bytes32(uint256(0x1446610d8f1dae7a0a681329264fc9c463ab9e9347b8af404165689bb533380));
-    else if (i == 12) return bytes32(uint256(0x1a97668a2fc2920c31bd17d57154427b84f3b3207a107a3f06beaa1fc56578f2));
-    else if (i == 13) return bytes32(uint256(0x7c12f492251b255bc8b9eaf99819c32a62b4089a6ea659dd4a5f8fa57c1332a));
-    else if (i == 14) return bytes32(uint256(0x1c07e9005be9b0a4af487e727473d5f52c72d3aee062ff06671d12909eac4d09));
-    else if (i == 15) return bytes32(uint256(0xb82200a98a49e44c92d7c0835e3f29668953821074e91071b8500796d5e58dc));
-    else if (i == 16) return bytes32(uint256(0x97821acb9fbcd6cdcd43b5895f38bdc108b1ff178942e726692e0cc92a2868c));
-    else if (i == 17) return bytes32(uint256(0x2b1fe32c11a3344a25a024c038c5e00e0b2e16b7aa0ab4129c9fe6370420871d));
-    else if (i == 18) return bytes32(uint256(0x83ceeacfbd85f703adec26cc99dd83724b7773fc999545ef63fad45b2cc28b0));
-    else if (i == 19) return bytes32(uint256(0x23192b109e2809b0a6d38b5fbb52a3eafbafc1432b4545a486cb3011c59b7399));
-    else if (i == 20) return bytes32(uint256(0x14948fc09d57389d97d4e78692506386efb6cdd56664f7623252b0ff74a180b9));
+    if (i == 0) return bytes32(uint256(0x1f7c0801c91910ee966819dcbce0c940c0618cd33b2dea878b1e80275d8b94a));
+    else if (i == 1) return bytes32(uint256(0x24816049a618fb575d582e49f278b6d6ed8df070dd4c6f42b5a2591bf258a5c7));
+    else if (i == 2) return bytes32(uint256(0xaa6ec0a6dbb444786866edc923652ed38fd4c331460f9cc17664dfb08a60c41));
+    else if (i == 3) return bytes32(uint256(0x21578f17ca98798034d7f43200df613efbbe03b2e73a71f1bbfe27719d63ec63));
+    else if (i == 4) return bytes32(uint256(0x1ac20c1e1bc1ecb8fe2a8c35811b34129efd72ef5c28ec52a73feeb11d5eeb23));
+    else if (i == 5) return bytes32(uint256(0x2680ec4ecaeebf96035b6ce23cdb5fc0367199ebb14f8b10109c87f3a8e9d7cf));
+    else if (i == 6) return bytes32(uint256(0xfcde95bf0d8f94ba1d4d717cbfa919332d9021cf4d7671a3922ee8040c27c4a));
+    else if (i == 7) return bytes32(uint256(0x14cf909d59ba36343fd30566ef5b4056991288c120b14bd37e816813fdc0992a));
+    else if (i == 8) return bytes32(uint256(0x76bfc8a3e7b37e24befe23b0f698d07027f467d649ba5dc81216cd555ca4e27));
+    else if (i == 9) return bytes32(uint256(0xf57eb010e999daeebb197d21bcf54cbf5687422b044d58ba73189b82cf61346));
+    else if (i == 10) return bytes32(uint256(0x285daa59cd5edaf5aad2ad16c350c779026c3018ed4245b9294b7b4085f9d9a2));
+    else if (i == 11) return bytes32(uint256(0x2fe3af955ad2b062d63538714fca18418c39b7c5a748c103d00b519c5be6f853));
+    else if (i == 12) return bytes32(uint256(0x2cb004612cebb6be147a95f69014ba4aea41c32dc771851f696e30a166367c69));
+    else if (i == 13) return bytes32(uint256(0x16b679b03ed416ac3bf10078162542fa646fec43486e9c731deccf3e58492bfb));
+    else if (i == 14) return bytes32(uint256(0x251aabe71c1e8989634b906c9a2f85a8025b4da4aa22f414a56051327c4d0e2));
+    else if (i == 15) return bytes32(uint256(0x18178e3528883bb3587730a962e93f91df48fdc0752cfe562d7f51a3bc828864));
+    else if (i == 16) return bytes32(uint256(0xfc36a09626e32928aee5780008d1aff581c8052566b7e5abed902f95cbe0f40));
+    else if (i == 17) return bytes32(uint256(0xca4b5f7171b55787f86e054df192604506aee630f389adb4d075ed8104c70df));
+    else if (i == 18) return bytes32(uint256(0x27c144cc7447fd24714893307f9f30debc0481d61c175e3179c2045e9159a483));
+    else if (i == 19) return bytes32(uint256(0x5fcb5998a7d9ad77b15d510c5d17008582ea07273a8c974d1544602a619ff8b));
+    else if (i == 20) return bytes32(uint256(0x23f27b4fa98be0dc2584d0f2b0cb352c4756880958026505da65b79bcd14d1b5));
     else revert("Index out of bounds");
   }
 }

@@ -182,4 +182,8 @@ contract('AssetPool Test', accounts => {
             logs[0].args.commitment.should.be.equal(toFixedHex(input.commitmentHash));
         })
     })
+
+    describe('#Withdral', () =>{
+
+    })
 })

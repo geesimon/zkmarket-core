@@ -132,7 +132,7 @@ describe("Circuit Withdrawal Test", function () {
     const rbigint = (nbytes) => bigInt.randBetween(0, bigInt(2).pow(nbytes * 8));
 
     before( async() => {           
-        withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdraw.circom"));
+        withdrawCircuit = await wasm_tester(path.join(__dirname, "../circuits", "withdrawal.circom"));
     });
 
     it("Should insert and verify 10 commitments in merkle tree", async () => {

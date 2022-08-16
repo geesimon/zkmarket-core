@@ -32,11 +32,11 @@ contract('AssetPool Test', accounts => {
     const ZERO_VALUE = bigInt('890052662763911307850778159620885184910760398780342638619984914703804053834').value; // = keccak256("zkMarket.Finance") % FIELD_SIZE
     const FEE = bigInt(COIN_AMOUNT).shiftRight(2) || bigInt(1e18);
     const RELAYER = accounts[1];
-    const SENDER = accounts[1];
+    const SELLER = accounts[3];
     const OPERATOR = accounts[0];
     const RECIPIENT = accounts[2];
     const TREE_LEVELS = MERKLE_TREE_HEIGHT || 16;
-    const SEND_VALUE = COIN_AMOUNT || '1000000000000000000'; // 1 ether
+    const SELL_VALUE = COIN_AMOUNT || '1000000000000000000'; // 1 ether
 
     //Global variables
     let mimcHasher;
@@ -104,98 +104,98 @@ contract('AssetPool Test', accounts => {
             withdrawal_verification_key = JSON.parse(fs.readFileSync(WithdrawalCircuitVerificationKey));
     })
 
-    // describe('#Commitment Verification', () => {
-    //     let paypalUSDCAssetPool;
+    describe('#Commitment Verification', () => {
+        let paypalUSDCAssetPool;
 
-    //     before(async () => {    
-    //         paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
-    //             CommitmentVerifier.address,
-    //             WithdrawalVerifier.address,
-    //             Hasher.address,
-    //             TREE_LEVELS,
-    //             {from: OPERATOR}
-    //         );
-    //     });      
+        before(async () => {    
+            paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
+                CommitmentVerifier.address,
+                WithdrawalVerifier.address,
+                Hasher.address,
+                TREE_LEVELS,
+                {from: OPERATOR}
+            );
+        });      
 
-    //     it('Should allow operator register comment if not exists', async () => {
-    //         let commitment = bigInt(42);
-    //         let amount = bigInt(100);
+        it('Should allow operator register comment if not exists', async () => {
+            let commitment = bigInt(42);
+            let amount = bigInt(100);
             
-    //         let isExists = await paypalUSDCAssetPool.commitmentExists(toFixedHex(commitment));
-    //         isExists.should.equal(false);
+            let isExists = await paypalUSDCAssetPool.commitmentExists(toFixedHex(commitment));
+            isExists.should.equal(false);
 
-    //         await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString(), {from: OPERATOR });
-    //         isExists = await paypalUSDCAssetPool.commitmentExists(toFixedHex(commitment));
-    //         isExists.should.equal(true);
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString(), {from: OPERATOR });
+            isExists = await paypalUSDCAssetPool.commitmentExists(toFixedHex(commitment));
+            isExists.should.equal(true);
 
-    //         await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString())
-    //                 .should.be.rejectedWith('The commitment already exists');
-    //     })
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString())
+                    .should.be.rejectedWith('The commitment already exists');
+        })
 
-    //     it('Should only allow contract owner to register commitment', async () => {
-    //         const commitment = bigInt(33);
-    //         let amount = bigInt(100);
+        it('Should only allow contract owner to register commitment', async () => {
+            const commitment = bigInt(33);
+            let amount = bigInt(100);
     
-    //         await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString(), {from: SENDER })
-    //             .should.be.rejectedWith('Ownable: caller is not the owner');
-    //     })
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment), amount.toString(), {from: SELLER })
+                .should.be.rejectedWith('Ownable: caller is not the owner');
+        })
 
-    //     it('Should generte correct proof and detect tampering by SnarkJS', async () => {
-    //         const transaction = generateTransaction(pedersenHasher);
+        it('Should generte correct proof and detect tampering by SnarkJS', async () => {
+            const transaction = generateTransaction(pedersenHasher);
            
-    //         const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-    //                                                                         transaction,
-    //                                                                         CommitmentCircuitWASMFile,
-    //                                                                         CommitmentCircuitKey
-    //                                                                         );
+            const {proof, publicSignals} = await snarkjs.groth16.fullProve(
+                                                                            transaction,
+                                                                            CommitmentCircuitWASMFile,
+                                                                            CommitmentCircuitKey
+                                                                            );
             
     
-    //         let result = await snarkjs.groth16.verify(commitment_verification_key, publicSignals, proof);
-    //         result.should.be.equal(true);
+            let result = await snarkjs.groth16.verify(commitment_verification_key, publicSignals, proof);
+            result.should.be.equal(true);
 
-    //         // Try to cheat with wrong amount
-    //         let publicSignalsCopy = JSON.parse(JSON.stringify(publicSignals));
-    //         publicSignalsCopy[1] = '100'
-    //         result  = await snarkjs.groth16.verify(commitment_verification_key, publicSignalsCopy, proof);
-    //         result.should.be.equal(false);
-    //     })
+            // Try to cheat with wrong amount
+            let publicSignalsCopy = JSON.parse(JSON.stringify(publicSignals));
+            publicSignalsCopy[1] = '100'
+            result  = await snarkjs.groth16.verify(commitment_verification_key, publicSignalsCopy, proof);
+            result.should.be.equal(false);
+        })
 
-    //     it('Should insert commitment if proof is valid', async () => {
-    //         const transaction = generateTransaction(pedersenHasher);
+        it('Should insert commitment if proof is valid', async () => {
+            const transaction = generateTransaction(pedersenHasher);
         
-    //         const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-    //                                                                         transaction,
-    //                                                                         CommitmentCircuitWASMFile,
-    //                                                                         CommitmentCircuitKey
-    //                                                                         );
+            const {proof, publicSignals} = await snarkjs.groth16.fullProve(
+                                                                            transaction,
+                                                                            CommitmentCircuitWASMFile,
+                                                                            CommitmentCircuitKey
+                                                                            );
             
-    //         const proofData = packProofData(proof);
+            const proofData = packProofData(proof);
             
-    //         await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
-    //         const { logs } = await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, { from: RELAYER});
-    //         logs[0].event.should.be.equal('InsertCommitment');
-    //         logs[0].args.commitment.should.be.equal(toFixedHex(transaction.commitmentHash));
-    //     })
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
+            const { logs } = await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, { from: RELAYER});
+            logs[0].event.should.be.equal('InsertCommitment');
+            logs[0].args.commitment.should.be.equal(toFixedHex(transaction.commitmentHash));
+        })
 
-    //     it('Should only allow commitment that match correct amount to be inserted', async () => {
-    //         const transaction = generateTransaction(pedersenHasher);
+        it('Should only allow commitment that match correct amount to be inserted', async () => {
+            const transaction = generateTransaction(pedersenHasher);
             
-    //         await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
 
-    //         const fake_transaction = generateTransaction(pedersenHasher, transaction.secret, transaction.nullifier, bigInt(transaction.amount).add(1));
-    //         const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-    //                                                                         fake_transaction,
-    //                                                                         CommitmentCircuitWASMFile,
-    //                                                                         CommitmentCircuitKey
-    //                                                                         );
+            const fake_transaction = generateTransaction(pedersenHasher, transaction.secret, transaction.nullifier, bigInt(transaction.amount).add(1));
+            const {proof, publicSignals} = await snarkjs.groth16.fullProve(
+                                                                            fake_transaction,
+                                                                            CommitmentCircuitWASMFile,
+                                                                            CommitmentCircuitKey
+                                                                            );
             
-    //         const proofData = packProofData(proof);
-    //         publicSignals[0] = transaction.commitmentHash;
+            const proofData = packProofData(proof);
+            publicSignals[0] = transaction.commitmentHash;
             
-    //         await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, {from: RELAYER})
-    //             .should.be.rejectedWith('Amount mismatch');
-    //     })
-    // })
+            await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, {from: RELAYER})
+                .should.be.rejectedWith('Amount mismatch');
+        })
+    })
 
     describe('#Withdral', () =>{
         let paypalUSDCAssetPool;
@@ -210,6 +210,9 @@ contract('AssetPool Test', accounts => {
                 {from: OPERATOR}
             );
             merkleTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
+            
+            //Make deposit to the asset pool
+            paypalUSDCAssetPool.sellerDeposit({from: SELLER, value: SELL_VALUE});
         });
 
         it('Should withdraw only once by presenting valid proof', async () => {
@@ -219,7 +222,7 @@ contract('AssetPool Test', accounts => {
                                                 pedersenHasher, 
                                                 transaction.secret, 
                                                 transaction.nullifier, 
-                                                SEND_VALUE
+                                                SELL_VALUE
                                             );
 
             merkleTree.insert(transaction.commitmentHash);
@@ -278,14 +281,14 @@ contract('AssetPool Test', accounts => {
             const balanceRecipientAfter = await web3.eth.getBalance(RECIPIENT);
             const feeBN = toBN(FEE.toString());
 
-            // balanceAssetPoolAfter.should.be.eq.BN(toBN(balanceAssetPoolBefore).sub(toBN(SEND_VALUE)));
-            // balanceRelayerAfter.should.be.gt.BN(toBN(balanceRelayerBefore));  
-            // balanceReceiverAfter.should.be.gt.BN(toBN(balanceReceiverBefore));
+            balanceAssetPoolAfter.should.be.eq.BN(toBN(balanceAssetPoolBefore).sub(toBN(SELL_VALUE)));
+            balanceRecipientAfter.should.be.eq.BN(toBN(balanceRecipientBefore).add(toBN(SELL_VALUE)).sub(feeBN));
+            balanceRelayerAfter.should.be.gt.BN(toBN(balanceRelayerBefore));
       
-            console.log("AssetPool:", balanceAssetPoolBefore.toString(), "->", balanceAssetPoolAfter.toString());
-            console.log("Recipient:", balanceRecipientBefore.toString(), "->", balanceRecipientAfter.toString());
-            console.log("Relayer:", balanceRelayerBefore.toString(), "->", balanceRelayerAfter.toString());
-
+            // console.log("AssetPool:", balanceAssetPoolBefore.toString(), "->", balanceAssetPoolAfter.toString());
+            // console.log("Recipient:", balanceRecipientBefore.toString(), "->", balanceRecipientAfter.toString());
+            // console.log("Relayer:", balanceRelayerBefore.toString(), "->", balanceRelayerAfter.toString());
+            // console.log("Fee:", feeBN.toString());
             logs[0].event.should.be.equal('Withdrawal');
             logs[0].args.to.should.be.equal(RECIPIENT);
             logs[0].args.amount.should.be.eq.BN(toBN(withdrawalInput.amount));
@@ -300,6 +303,28 @@ contract('AssetPool Test', accounts => {
             //Check same proof can't be used multiple times
             await paypalUSDCAssetPool.withdraw(proofData, publicSignals, { from: RELAYER})
                     .should.be.rejectedWith('The note has already been spent');
+        })
+    })
+
+    describe('#Seller Features', () => {
+        let paypalUSDCAssetPool;
+
+        before(async () => {    
+            paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
+                CommitmentVerifier.address,
+                WithdrawalVerifier.address,
+                Hasher.address,
+                TREE_LEVELS,
+                {from: OPERATOR}
+            );
+        });
+
+        it('Should take seller deposit', async () => {
+            const balanceBefore = await web3.eth.getBalance(paypalUSDCAssetPool.address);
+            await paypalUSDCAssetPool.sellerDeposit({from: SELLER, value:SELL_VALUE});
+            const balanceAfter = await web3.eth.getBalance(paypalUSDCAssetPool.address);
+  
+            balanceAfter.should.be.eq.BN(toBN(balanceBefore).add(toBN(SELL_VALUE)));
         })
     })
 })

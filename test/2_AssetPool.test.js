@@ -46,10 +46,11 @@ contract('AssetPool Test', accounts => {
     const rbigint = (nbytes) => bigInt.randBetween(0, bigInt(2).pow(nbytes * 8));
     const toFixedHex = (number, length = 32) => '0x' + bigInt(number).toString(16).padStart(length * 2, '0');
 
-    const generateTransaction = (hasherFunc, 
-                                 _secret = rbigint(31), 
-                                 _nullifier = rbigint(31), 
-                                 _amount = rbigint(31)) => {
+    const generateCommitment = (hasherFunc, 
+                                _amount = rbigint(31),
+                                _secret = rbigint(31), 
+                                _nullifier = rbigint(31)
+                                ) => {
         const preimage = Buffer.concat([
                                         Buffer.from(bigInt2BytesLE(_nullifier, 31)),
                                         Buffer.from(bigInt2BytesLE(_secret, 31)),
@@ -141,10 +142,10 @@ contract('AssetPool Test', accounts => {
         })
 
         it('Should generte correct proof and detect tampering by SnarkJS', async () => {
-            const transaction = generateTransaction(pedersenHasher);
+            const commitment = generateCommitment(pedersenHasher);
            
             const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-                                                                            transaction,
+                                                                            commitment,
                                                                             CommitmentCircuitWASMFile,
                                                                             CommitmentCircuitKey
                                                                             );
@@ -161,36 +162,36 @@ contract('AssetPool Test', accounts => {
         })
 
         it('Should insert commitment if proof is valid', async () => {
-            const transaction = generateTransaction(pedersenHasher);
+            const commitment = generateCommitment(pedersenHasher);
         
             const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-                                                                            transaction,
+                commitment,
                                                                             CommitmentCircuitWASMFile,
                                                                             CommitmentCircuitKey
                                                                             );
             
             const proofData = packProofData(proof);
             
-            await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment.commitmentHash), commitment.amount, {from: OPERATOR });
             const { logs } = await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, { from: RELAYER});
             logs[0].event.should.be.equal('InsertCommitment');
-            logs[0].args.commitment.should.be.equal(toFixedHex(transaction.commitmentHash));
+            logs[0].args.commitment.should.be.equal(toFixedHex(commitment.commitmentHash));
         })
 
         it('Should only allow commitment that match correct amount to be inserted', async () => {
-            const transaction = generateTransaction(pedersenHasher);
+            const commitment = generateCommitment(pedersenHasher);
             
-            await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment.commitmentHash), commitment.amount, {from: OPERATOR });
 
-            const fake_transaction = generateTransaction(pedersenHasher, transaction.secret, transaction.nullifier, bigInt(transaction.amount).add(1));
+            const fake_commitment = generateCommitment(pedersenHasher, commitment.secret, commitment.nullifier, bigInt(commitment.amount).add(1));
             const {proof, publicSignals} = await snarkjs.groth16.fullProve(
-                                                                            fake_transaction,
+                                                                            fake_commitment,
                                                                             CommitmentCircuitWASMFile,
                                                                             CommitmentCircuitKey
                                                                             );
             
             const proofData = packProofData(proof);
-            publicSignals[0] = transaction.commitmentHash;
+            publicSignals[0] = commitment.commitmentHash;
             
             await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, {from: RELAYER})
                 .should.be.rejectedWith('Amount mismatch');
@@ -216,44 +217,40 @@ contract('AssetPool Test', accounts => {
         });
 
         it('Should withdraw only once by presenting valid proof', async () => {
-            let transaction = generateTransaction(pedersenHasher);
-            //Update Amount
-            transaction = generateTransaction(
-                                                pedersenHasher, 
-                                                transaction.secret, 
-                                                transaction.nullifier, 
-                                                SELL_VALUE
+            commitment = generateCommitment(
+                                            pedersenHasher, 
+                                            SELL_VALUE
                                             );
 
-            merkleTree.insert(transaction.commitmentHash);
+            merkleTree.insert(commitment.commitmentHash);
 
             // Prove and insert commitment
             let {proof, publicSignals} = await snarkjs.groth16.fullProve(
-                                                                            transaction,
+                                                                            commitment,
                                                                             CommitmentCircuitWASMFile,
                                                                             CommitmentCircuitKey
                                                                             );
 
             let proofData = packProofData(proof);
 
-            await paypalUSDCAssetPool.registerCommitment(toFixedHex(transaction.commitmentHash), transaction.amount, {from: OPERATOR });
+            await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment.commitmentHash), commitment.amount, {from: OPERATOR });
             let { logs } = await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, { from: RELAYER});
    
             //Verify commitment has been inserted correctly
-            verifyMerklePath(merkleTree, TREE_LEVELS, transaction.commitmentHash, logs[0]);
+            verifyMerklePath(merkleTree, TREE_LEVELS, commitment.commitmentHash, logs[0]);
           
             // Prepare proof
-            const { pathElements, pathIndices } =  merkleTree.proof(transaction.commitmentHash);
+            const { pathElements, pathIndices } =  merkleTree.proof(commitment.commitmentHash);
             // Circuit input
             const withdrawalInput = {
                 root: merkleTree.root.toString(),
-                nullifierHash: pedersenHasher(bigInt2BytesLE(transaction.nullifier, 31)).toString(),
+                nullifierHash: pedersenHasher(bigInt2BytesLE(commitment.nullifier, 31)).toString(),
                 recipient: bigInt(RECIPIENT.slice(2), 16).toString(),
-                amount: transaction.amount,
+                amount: commitment.amount,
                 relayer: bigInt(RELAYER.slice(2), 16).toString(),
                 fee: FEE.toString(),
-                nullifier: transaction.nullifier,
-                secret: transaction.secret,
+                nullifier: commitment.nullifier,
+                secret: commitment.secret,
                 pathElements: pathElements,
                 pathIndices: pathIndices,
             };

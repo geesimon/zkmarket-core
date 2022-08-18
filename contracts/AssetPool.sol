@@ -86,7 +86,7 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
                             uint256[8] calldata _proofData,
                             uint256[2] calldata _publicInputs
                             ) external {
-        require(commitmentLog[bytes32(_publicInputs[0])].amount > 0, "No commitment found");
+        require(commitmentExists(bytes32(_publicInputs[0])), "No commitment found");
         require(commitmentLog[bytes32(_publicInputs[0])].amount == _publicInputs[1], "Amount mismatch");
         require(commitmentLog[bytes32(_publicInputs[0])].isProven == false, "Commitment has already been verified");
         require(

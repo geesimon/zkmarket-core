@@ -27,17 +27,11 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
     ICommitmentVerifier public immutable commitmentVerifier;
     IWithdrawalVerifier public immutable withdrawalVerifier;
 
-    struct SellerAccount {
-        uint256 balance;
-        string  name;
-    }
-
     struct CommitmentLogItem {
         uint256 amount;
         bool isProven;
     }
-
-    mapping(address => SellerAccount) public sellers;    
+    
     // Commitment log, the amount need to be proofed before the commitment inserting to Merkel tree
     mapping(bytes32 => CommitmentLogItem) public commitmentLog;
     mapping(bytes32 => bool) public nullifierHashes;
@@ -108,16 +102,7 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
 
         emit InsertCommitment(bytes32(_publicInputs[0]), root, leafIndex, pathElements, pathIndices, block.timestamp);
     }
-
-/**
-    @dev Deposit funds from seller
-**/
-    function sellerDeposit() external payable {
-        sellers[msg.sender].balance += msg.value;
-
-        emit SellerDeposit(msg.sender, msg.value);
-  }
-  
+ 
 /** 
     @dev whether the nullifier is already spent 
 **/

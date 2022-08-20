@@ -37,8 +37,7 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
     mapping(bytes32 => bool) public nullifierHashes;
 
     event InsertCommitment(bytes32 indexed commitment, bytes32 root, uint32 leafIndex, 
-                            bytes32[] pathElements, uint32 pathIndices, uint256 timestamp);
-    event SellerDeposit(address indexed sellerAddress, uint256 amount);
+                            bytes32[] pathElements, uint32 pathIndices, uint256 timestamp);    
     event Withdrawal(address indexed to, uint256 amount, bytes32 nullifierHash, 
                         address relayer, uint256 fee);
 
@@ -127,6 +126,9 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
   ) external payable nonReentrant{
     
     require(!nullifierHashes[bytes32(_publicInputs[1])], "The note has already been spent");
+
+    require(_getFee(_publicInputs[3]) == _publicInputs[5], "Wrong fee supplied");    
+
     require(
             withdrawalVerifier.verifyProof([_proofData[0], _proofData[1]],
                                             [[_proofData[2], _proofData[3]], [_proofData[4], _proofData[5]]],
@@ -162,4 +164,8 @@ abstract contract AssetPool is MerkleTreeWithHistory, ReentrancyGuard, Ownable {
     uint256 _amount,
     uint256 _fee
   ) internal virtual;
+
+  function _getFee(uint256 _amount) internal view  virtual returns (uint256);
+
+  function getBalance(address _address) external view virtual returns (uint256);
 }

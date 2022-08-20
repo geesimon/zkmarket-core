@@ -6,6 +6,7 @@ const { toBN } = require('web3-utils');
 const Hasher = artifacts.require("Hasher");
 const CommitmentVerifier = artifacts.require('CommitmentVerifier');
 const WithdrawalVerifier = artifacts.require('WithdrawalVerifier');
+const FakeUSDC = artifacts.require('FakeUSDC');
 const PaypalUSDCAssetPool = artifacts.require("PaypalUSDCAssetPool");
 const { COIN_AMOUNT, MERKLE_TREE_HEIGHT } = process.env;
 
@@ -28,15 +29,18 @@ const bits2PathIndices = (_bitmap, _length) => {
     return Array(_length - bits.length).fill(0).concat(bits)
 }
 
+const getFee = (_amount) => {
+    return toBN(_amount).mul(toBN(4)).div(toBN(100));
+}
+
 contract('AssetPool Test', accounts => {
     const ZERO_VALUE = bigInt('890052662763911307850778159620885184910760398780342638619984914703804053834').value; // = keccak256("zkMarket.Finance") % FIELD_SIZE
-    const FEE = bigInt(COIN_AMOUNT).shiftRight(2) || bigInt(1e18);
     const RELAYER = accounts[1];
-    const SELLER = accounts[3];
+    const SELLER = accounts[2];
     const OPERATOR = accounts[0];
     const RECIPIENT = accounts[2];
     const TREE_LEVELS = MERKLE_TREE_HEIGHT || 16;
-    const SELL_VALUE = COIN_AMOUNT || '1000000000000000000'; // 1 ether
+    const SELL_VALUE = COIN_AMOUNT || '100000000'; // 1 ether
 
     //Global variables
     let mimcHasher;
@@ -108,12 +112,13 @@ contract('AssetPool Test', accounts => {
     describe('#Commitment Verification', () => {
         let paypalUSDCAssetPool;
 
-        before(async () => {    
+        before(async () => {   
             paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
                 CommitmentVerifier.address,
                 WithdrawalVerifier.address,
                 Hasher.address,
                 TREE_LEVELS,
+                FakeUSDC.address,
                 {from: OPERATOR}
             );
         });      
@@ -200,20 +205,26 @@ contract('AssetPool Test', accounts => {
 
     describe('#Withdral', () =>{
         let paypalUSDCAssetPool;
+        let usdcToken;
         let merkleTree;
 
-        before(async () => {    
+        before(async () => {
+            usdcToken = await FakeUSDC.new(1000000 * (10 ** 6));  
             paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
                 CommitmentVerifier.address,
                 WithdrawalVerifier.address,
                 Hasher.address,
                 TREE_LEVELS,
+                usdcToken.address,
                 {from: OPERATOR}
             );
             merkleTree = new MerkleTree(TREE_LEVELS, [], { hashFunction: mimcHasher, zeroElement: ZERO_VALUE});
             
             //Make deposit to the asset pool
-            paypalUSDCAssetPool.sellerDeposit({from: SELLER, value: SELL_VALUE});
+            const sellerDepositAmount = toBN(SELL_VALUE).mul(toBN(10));
+            await usdcToken.transfer(SELLER, sellerDepositAmount)
+            await usdcToken.approve(paypalUSDCAssetPool.address, sellerDepositAmount, {from: SELLER});
+            await paypalUSDCAssetPool.sellerDeposit("test@test.com", sellerDepositAmount, {from: SELLER});
         });
 
         it('Should withdraw only once by presenting valid proof', async () => {
@@ -232,6 +243,7 @@ contract('AssetPool Test', accounts => {
                                                                             );
 
             let proofData = packProofData(proof);
+            const fee = getFee(commitment.amount);
 
             await paypalUSDCAssetPool.registerCommitment(toFixedHex(commitment.commitmentHash), commitment.amount, {from: OPERATOR });
             let { logs } = await paypalUSDCAssetPool.proveCommitment(proofData, publicSignals, { from: RELAYER});
@@ -248,7 +260,7 @@ contract('AssetPool Test', accounts => {
                 recipient: bigInt(RECIPIENT.slice(2), 16).toString(),
                 amount: commitment.amount,
                 relayer: bigInt(RELAYER.slice(2), 16).toString(),
-                fee: FEE.toString(),
+                fee: fee.toString(),
                 nullifier: commitment.nullifier,
                 secret: commitment.secret,
                 pathElements: pathElements,
@@ -265,33 +277,38 @@ contract('AssetPool Test', accounts => {
                                                                         ));
             
 
-            proofData = packProofData(proof);
-    
-            balanceAssetPoolBefore = await web3.eth.getBalance(paypalUSDCAssetPool.address);
-            const balanceRelayerBefore = await web3.eth.getBalance(RELAYER);
-            const balanceRecipientBefore = await web3.eth.getBalance(RECIPIENT);
-    
-            ;({ logs } = await paypalUSDCAssetPool.withdraw(proofData, publicSignals, { from: RELAYER}));
+            proofData = packProofData(proof);    
            
-            balanceAssetPoolAfter = await web3.eth.getBalance(paypalUSDCAssetPool.address);
-            const balanceRelayerAfter = await web3.eth.getBalance(RELAYER);
-            const balanceRecipientAfter = await web3.eth.getBalance(RECIPIENT);
-            const feeBN = toBN(FEE.toString());
+            const balanceAssetPoolBefore = await paypalUSDCAssetPool.getBalance(paypalUSDCAssetPool.address);
+            const balanceRelayerBefore = await paypalUSDCAssetPool.getBalance(RELAYER);
+            const balanceRecipientBefore = await paypalUSDCAssetPool.getBalance(RECIPIENT);
+    
+            ;({ logs } = await paypalUSDCAssetPool.withdraw(proofData, publicSignals, {from: RELAYER}));
+           
+            const balanceAssetPoolAfter = await paypalUSDCAssetPool.getBalance(paypalUSDCAssetPool.address);
+            const balanceRelayerAfter = await paypalUSDCAssetPool.getBalance(RELAYER);
+            const balanceRecipientAfter = await paypalUSDCAssetPool.getBalance(RECIPIENT);
 
-            balanceAssetPoolAfter.should.be.eq.BN(toBN(balanceAssetPoolBefore).sub(toBN(SELL_VALUE)));
-            balanceRecipientAfter.should.be.eq.BN(toBN(balanceRecipientBefore).add(toBN(SELL_VALUE)).sub(feeBN));
-            balanceRelayerAfter.should.be.gt.BN(toBN(balanceRelayerBefore));
-      
+            // console.log("Fee:", fee.toString());
             // console.log("AssetPool:", balanceAssetPoolBefore.toString(), "->", balanceAssetPoolAfter.toString());
             // console.log("Recipient:", balanceRecipientBefore.toString(), "->", balanceRecipientAfter.toString());
             // console.log("Relayer:", balanceRelayerBefore.toString(), "->", balanceRelayerAfter.toString());
-            // console.log("Fee:", feeBN.toString());
-            logs[0].event.should.be.equal('Withdrawal');
-            logs[0].args.to.should.be.equal(RECIPIENT);
-            logs[0].args.amount.should.be.eq.BN(toBN(withdrawalInput.amount));
-            logs[0].args.nullifierHash.should.be.equal(toFixedHex(withdrawalInput.nullifierHash))
-            logs[0].args.relayer.should.be.equal(RELAYER)
-            logs[0].args.fee.should.be.eq.BN(feeBN)
+
+            const withdrawalAmount = toBN(SELL_VALUE).sub(fee);            
+            const relayerPay = toBN(balanceRelayerAfter).sub(balanceRelayerBefore);
+            relayerPay.should.be.gt.BN(toBN(0));            
+            balanceRecipientAfter.should.be.eq.BN(toBN(balanceRecipientBefore).add(withdrawalAmount));
+            balanceAssetPoolAfter.should.be.eq.BN(toBN(balanceAssetPoolBefore).sub(withdrawalAmount).sub(relayerPay));            
+           
+            logs.length.should.be.equal(2);
+            logs[0].event.should.be.equal('SellerPayouts');
+            logs[0].args.amount.should.be.eq.BN(withdrawalAmount);
+            logs[1].event.should.be.equal('Withdrawal');
+            logs[1].args.to.should.be.equal(RECIPIENT);
+            logs[1].args.amount.should.be.eq.BN(toBN(withdrawalInput.amount));
+            logs[1].args.nullifierHash.should.be.equal(toFixedHex(withdrawalInput.nullifierHash))
+            logs[1].args.relayer.should.be.equal(RELAYER)
+            logs[1].args.fee.should.be.eq.BN(fee)
     
             //Check the nullifierHash is spent
             isSpent = await paypalUSDCAssetPool.isSpent(toFixedHex(withdrawalInput.nullifierHash))
@@ -300,28 +317,6 @@ contract('AssetPool Test', accounts => {
             //Check same proof can't be used multiple times
             await paypalUSDCAssetPool.withdraw(proofData, publicSignals, { from: RELAYER})
                     .should.be.rejectedWith('The note has already been spent');
-        })
-    })
-
-    describe('#Seller Features', () => {
-        let paypalUSDCAssetPool;
-
-        before(async () => {    
-            paypalUSDCAssetPool = await PaypalUSDCAssetPool.new(
-                CommitmentVerifier.address,
-                WithdrawalVerifier.address,
-                Hasher.address,
-                TREE_LEVELS,
-                {from: OPERATOR}
-            );
-        });
-
-        it('Should take seller deposit', async () => {
-            const balanceBefore = await web3.eth.getBalance(paypalUSDCAssetPool.address);
-            await paypalUSDCAssetPool.sellerDeposit({from: SELLER, value:SELL_VALUE});
-            const balanceAfter = await web3.eth.getBalance(paypalUSDCAssetPool.address);
-  
-            balanceAfter.should.be.eq.BN(toBN(balanceBefore).add(toBN(SELL_VALUE)));
         })
     })
 })

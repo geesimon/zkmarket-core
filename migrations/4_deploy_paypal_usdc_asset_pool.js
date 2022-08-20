@@ -19,7 +19,6 @@ module.exports = function (deployer, network) {
     
     switch (network) {
       case 'develop':
-          console.log('use fake USDC');
           const fakeUSDC = await FakeUSDC.deployed();
           usdcTokenAddress = fakeUSDC.address;
           break;

@@ -22,9 +22,11 @@ module.exports = function (deployer, network) {
           const fakeUSDC = await FakeUSDC.deployed();
           usdcTokenAddress = fakeUSDC.address;
           break;
-      case 'test': usdcTokenAddress = TESTNET_USDC_ADDRESS; break;
-      default: usdcTokenAddress = MAINNET_USDC_ADDRESS;
+      case 'mumbai': usdcTokenAddress = TESTNET_USDC_ADDRESS; break;
+      case 'mainnet': usdcTokenAddress = MAINNET_USDC_ADDRESS; break;
+      default: break;
     }
+    console.log("Using USDC:", usdcTokenAddress);
     
     await deployer.deploy(
       PaypalUSDCAssetPool,

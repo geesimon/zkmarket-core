@@ -29,7 +29,7 @@ contract PaypalUSDCAssetPool is AssetPool {
     uint32 currentSellerIndex = 0;
 
     event SellerDeposit(address indexed sellerAddress, string paypalAccount, uint256 amount);
-    event SellerPayouts(string paypalAccount, uint256 amount);
+    event SellerPayouts(string indexed paypalAccount, uint256 amount);
 
     constructor(
         ICommitmentVerifier _commitmentVerifier,

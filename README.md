@@ -83,7 +83,7 @@ Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/t
 ## Demo Web Site (use Mumbai)
 https://zkmarket.finance
 
-Note: to play with the demo site, you will need a PayPal sandbox account and some USDCs in Mumbai. The easiest way to get test USDCs is through creating a dev account in https://developers.circle.com , fund the account and bridge the USDC to Polygon.
+Note: to play with the demo site, you will need a PayPal sandbox account and some USDCs in Mumbai. The easiest way to get test USDCs is through creating a dev account in https://developers.circle.com , fund the account and bridge some USDCs to Polygon.
 
 ## Demo Video
 https://youtu.be/VKlfaYuKOfM

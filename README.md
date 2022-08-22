@@ -80,8 +80,10 @@ Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/t
 1. `PaypalUSDCAssetPool`:  0x87c4a39A42F37e5Ff389BE1D66B751bDF96E30de
 1. `USDC (official USDC bridge contract on Polygon Mainnet)`:  0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 
-## Demo Web Site
+## Demo Web Site (use Mumbai)
 https://zkmarket.finance
+
+Note: to play with the demo site, you will need a PayPal sandbox account and some USDCs in Mumbai. The easiest way to get test USDCs is through creating a dev account in https://developers.circle.com , fund the account and bridge the USDC to Polygon.
 
 ## Demo Video
 https://youtu.be/VKlfaYuKOfM

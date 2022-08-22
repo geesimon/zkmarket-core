@@ -78,7 +78,7 @@ Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/t
 1. `CommitmentVerifier`:  0x661E796F4ccda98E4a9031687B4E394447d1cc22
 1. `WithdrawalVerifier`:  0x0CD5a54bBA5141d323d1aFe8F93B35689963a590
 1. `PaypalUSDCAssetPool`:  0x695B4367D9096D287960718Bf509bB53be6e3B56
-1. `USDC (official USDC bridge contract on Mumbai)`:  0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
+1. `USDC (official USDC bridge contract on Polygon Mainnet)`:  0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 
 ## Demo Web Site
 https://zkmarket.finance

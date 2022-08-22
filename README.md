@@ -65,19 +65,19 @@ Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/t
 `npm run migrate:test`
 
 #### Already Deployed (Mumbai)
-1. `Hasher`:  0xD2BEcA2BBf752770994DcbD49026e4e8c48649ba
-1. `CommitmentVerifier`:  0xA83898Aa6F0126a2558c95990851B0762dcebB8E
-1. `WithdrawalVerifier`:  0x8b31e578314aCA727392ef3628113BB4a0c3a08C
-1. `PaypalUSDCAssetPool`:  0x1Bd15aA5Fe95Fd5ff5B300e2545407e14BECB76c
+1. `Hasher`:  0x2987789984964942814EcA0E62a416e28caB6632
+1. `CommitmentVerifier`:  0xF0859Bb069207a9208E56269406cE27BB0C04dcd
+1. `WithdrawalVerifier`:  0x207c5cea88202e0708416AcB0f5BEEcA8607B7FA
+1. `PaypalUSDCAssetPool`:  0xC6Ac772ebe6751877cC3B9B997F11e401917E87f
 1. `USDC (official USDC bridge contract on Mumbai)`:  0x0fa8781a83e46826621b3bc094ea2a0212e71b23
 
 ### MainNet
 `npm run migrate:mainnet`
 #### Already Deployed
-1. `Hasher`:  0x2e1B61931cA77EE4ed39135e41C4dD1D6AdEF4f6
-1. `CommitmentVerifier`:  0x661E796F4ccda98E4a9031687B4E394447d1cc22
-1. `WithdrawalVerifier`:  0x0CD5a54bBA5141d323d1aFe8F93B35689963a590
-1. `PaypalUSDCAssetPool`:  0x695B4367D9096D287960718Bf509bB53be6e3B56
+1. `Hasher`:  0x6cbD754473C4A4451200269C9344060d3057718d
+1. `CommitmentVerifier`:  0x9fF45B2A08408C724Af9E5b15a202280139e8143
+1. `WithdrawalVerifier`:  0x1cc1532d549C29A03275591094d62000329db044
+1. `PaypalUSDCAssetPool`:  0x87c4a39A42F37e5Ff389BE1D66B751bDF96E30de
 1. `USDC (official USDC bridge contract on Polygon Mainnet)`:  0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
 
 ## Demo Web Site

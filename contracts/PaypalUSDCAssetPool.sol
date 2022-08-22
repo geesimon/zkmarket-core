@@ -26,7 +26,7 @@ contract PaypalUSDCAssetPool is AssetPool {
 
     mapping(address => sellerInfo) public sellers;
     address[] public activeSellers;
-    uint32 currentSellerIndex = 0;
+    uint32 public currentSellerIndex = 0;
 
     event SellerDeposit(address indexed sellerAddress, string paypalAccount, uint256 amount);
     event SellerPayouts(string paypalAccount, uint256 amount);

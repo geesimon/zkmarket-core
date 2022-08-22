@@ -87,4 +87,11 @@ https://zkmarket.finance
 https://youtu.be/VKlfaYuKOfM
 
 ## Discussions
-
+### Fees
+PayPal charges `%3.49 of gross amount + $0.39` for our merchant transaction. To compensate such attrition and for simplicity, we deduct 4% from buyer's gross amount. For example: if user paid $100, she would get 96 USDC. Due to the high fee, this solution is not economically appealing to end user if not taking privacy protection into account. 
+To mitigate this issue, we could consider other payment solutions if it is accessible through API. 
+### Privacy
+Current implementation has good protection on buyer’s privacy. I.e., break the link between buyer PayPal account and Polygon address. However, Seller’s activity is more easier to be traced.
+As future improvement, we could design another mechanism to break the link between seller’s Polygon address and her PayPal account. For example: seller can post a commitment when deposit USDC coins. Then seller can provide a valid proof (without telling with commitment), to zkMarket.Finance contract to instruct PayPal payout service to make a payment to a specific PayPal account.
+### Beyond USDC/USD PAIR
+We only implement USDC/USD trade as POC. By leveraging such technology, we can support any crypto coins to fiat pairs (and beyond USD) and make this app a rich market place for P2P crypto trading.

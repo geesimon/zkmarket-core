@@ -58,7 +58,6 @@ Neither buyer nor seller needs to register to use this service. And thanks to th
 
 Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/test)
 
-<a name="contracts"></a>
 ## Polygon Deployment
 
 ### TestNet

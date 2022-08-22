@@ -11,8 +11,8 @@ module.exports = function (deployer, network) {
 
         await deployer.deploy(
                                 FakeUSDC,
-                                1000000 * (10 ** 6),
-                                {overwrite: false}
+                                1000000 * (10 ** 6)
+                                // {overwrite: false}
                             )
         const fakeUSDC = await FakeUSDC.deployed();
         //deposit money to test seller accounts

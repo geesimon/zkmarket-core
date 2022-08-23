@@ -83,7 +83,9 @@ Please check [test cases]( https://github.com/geesimon/zkmarket-core/tree/main/t
 ## Demo Web Site (use Mumbai)
 https://zkmarket.finance
 
-Note: to play with the demo site, you will need a PayPal sandbox account and some USDCs in Mumbai. The easiest way to get test USDCs is through creating a dev account in https://developers.circle.com , fund the account and bridge some USDCs to Polygon.
+- The demo site is configured to use test environment settings and Polygon Mumbai network.
+- To play with this demo, you will need a PayPal sandbox account and some USDCs in Mumbai. The easiest way to get test USDCs is through creating a dev account in https://developers.circle.com , fund the account and bridge some USDCs to Polygon Mumbai.
+- PayPal and Relayer services are deployed as FaaS in AliCloud (Singapore). The PayPal payout service is scheduled to run every 5 minutes. Which means after user successfully trade USDC coins, seller will receive PayPal payment within 5 minutes.
 
 ## Demo Video
 https://youtu.be/VKlfaYuKOfM

@@ -14,7 +14,7 @@
     "migrate:mainnet": "npx truffle migrate --network mainnet"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.6.0",
+    "@openzeppelin/contracts": "^4.7.3",
     "@trufflesuite/web3-provider-engine": "^15.0.14",
     "bigint-buffer": "^1.1.5",
     "bn-chai": "^1.0.1",
